@@ -1,4 +1,4 @@
-# Oxocard Connect
+# M5Stack Cardputer
 Various projects made with [M5Stack Cardputer]([https://oxocard.ch/en/connect/](https://shop.m5stack.com/products/m5stack-cardputer-kit-w-m5stamps3)).
 
 ## Projects
