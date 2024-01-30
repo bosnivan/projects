@@ -1,0 +1,44 @@
+# change this values to create new melodies
+speedValues = [1, 2, 3, 4, 5]
+noteValues = [56, 58, 60, 62, 64]
+
+class Ball:
+    distance:float
+    angle:int
+    speed:int
+    position:vector
+    noteValue:byte
+
+    def init(d:int, s:int, n:byte):
+        distance = d
+        angle = 0
+        speed = s
+        position.x = distance * cos(rad(angle))
+        position.y = distance * sin(rad(angle))
+        noteValue = n
+
+    def draw():
+        angle = (angle + speed) % 360;
+        position.x = distance * cos(rad(angle))
+        position.y = distance * sin(rad(angle))
+        stroke(0, 127, 0)
+        strokeWeight(2)
+        drawLine(0, 0, position.x, position.y)
+        fill(0, 127, 0)
+        drawCircle(position.x, position.y, 10)
+        if angle == 0:
+            print(noteValue)
+
+translate(120,120)
+
+balls:Ball[5]
+for i in sizeof(balls):
+    ball:Ball
+    ball.init(20 * (i + 1), speedValues[i], noteValues[i])
+    balls[i] = ball
+
+def onDraw():
+    background(0,0,0)
+    for i in sizeof(balls):
+        balls[i].draw()
+    update()
