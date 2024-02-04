@@ -1,0 +1,105 @@
+// https://www.arduino.cc/reference/en/libraries/arduinoble/
+// https://lego.github.io/lego-ble-wireless-protocol-docs/
+#include <ArduinoBLE.h>
+#include <ezButton.h>
+
+const byte precommand[10] = { 0x0a, 0x00, 0x41, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01 };
+byte speed[5][8] = {
+  { 0x08, 0x00, 0x81, 0x00, 0x01, 0x51, 0x00, 0x1e },  // Speed1
+  { 0x08, 0x00, 0x81, 0x01, 0x11, 0x51, 0x01, 0x32 },  // Speed2
+  { 0x08, 0x00, 0x81, 0x01, 0x11, 0x51, 0x01, 0x64 },  // Speed3
+  { 0x08, 0x00, 0x81, 0x00, 0x01, 0x51, 0x00, 0x00 },  // Stop
+  { 0x08, 0x00, 0x81, 0x00, 0x01, 0x51, 0x00, 0xce }   // Backward
+};
+const byte lights[11][8] = {
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x00 },  // Off
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x01 },  // Pink
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x02 },  // Purple
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x03 },  // Blue
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x04 },  // LightBlue
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x05 },  // Cyan
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x06 },  // Green
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x07 },  // Yellow
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x08 },  // Orange
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x09 },  // Red
+  { 0x08, 0x00, 0x81, 0x11, 0x11, 0x51, 0x00, 0x0A }   // White
+};
+const byte sound[5][8] = {
+  { 0x08, 0x00, 0x81, 0x01, 0x11, 0x51, 0x01, 0x03 },  // Brake
+  { 0x08, 0x00, 0x81, 0x01, 0x11, 0x51, 0x01, 0x05 },  // Depart
+  { 0x08, 0x00, 0x81, 0x01, 0x11, 0x51, 0x01, 0x07 },  // FillWater
+  { 0x08, 0x00, 0x81, 0x01, 0x11, 0x51, 0x01, 0x09 },  // Horn
+  { 0x08, 0x00, 0x81, 0x01, 0x11, 0x51, 0x01, 0x0A }   // Steam
+};
+
+bool isConnected = false;
+BLEDevice peripheral;
+BLEService service;
+BLECharacteristic characteristic;
+ezButton up(39);
+ezButton middle(2);
+ezButton down(38);
+ezButton left(36);
+ezButton right(37);
+
+
+void setup() {
+  pinMode(2, INPUT);
+  Serial.begin(115200);
+  BLE.begin();
+  BLE.scanForUuid("00001623-1212-efde-1623-785feabcd123");
+}
+
+void loop() {
+  if (isConnected) {
+    if (peripheral.connected()) {
+      up.loop();
+      if (up.isReleased()) {
+        Serial.println("Forward");
+        sendCommand(speed[0]);
+      }
+      middle.loop();
+      if (middle.isReleased()) {
+        Serial.println("Stop");
+        sendCommand(speed[3]);
+      }
+      down.loop();
+      if (down.isReleased()) {
+        Serial.println("Backward");
+        sendCommand(speed[4]);
+      }
+      left.loop();
+      if (left.isReleased()) {
+        Serial.println("Lights");
+        sendCommand(lights[random(0, 11)]);
+      }
+      right.loop();
+      if (right.isReleased()) {
+        Serial.println("Sound");
+        sendCommand(sound[random(0, 5)]);
+      }
+      delay(100);
+    } else {
+      BLE.scanForUuid("00001623-1212-efde-1623-785feabcd123");
+      isConnected = false;
+    }
+  } else {
+    peripheral = BLE.available();
+    if (peripheral) {
+      BLE.stopScan();
+      peripheral.connect();
+      peripheral.discoverAttributes();
+      service = peripheral.service("00001623-1212-efde-1623-785feabcd123");
+      characteristic = service.characteristic("00001624-1212-efde-1623-785feabcd123");
+      Serial.println("Connected to " + peripheral.address() + ".");
+      isConnected = true;
+    }
+  }
+}
+
+void sendCommand(const byte command[8]) {
+  characteristic.writeValue(precommand, 10);
+  delay(50);
+  characteristic.writeValue(command, 8);
+  delay(50);
+}
