@@ -6,3 +6,4 @@ Instead of [NanoPy](https://editor.nanopy.io/), which I'll explore with **Oxocar
 
 ## Projects
 - [Demo](https://github.com/bosnivan/projects/tree/main/Oxocard%20Connect/Demo) - Test project which shows on screen which button is pressed.
+- [Lego Duplo train controller](https://github.com/bosnivan/projects/tree/main/Oxocard%20Connect/LegoDuploTrainBleController) - Controlling Lego Duplo Train with BLE communication. | [Video](https://twitter.com/PlusPlusInt/status/1754185711886966817)
