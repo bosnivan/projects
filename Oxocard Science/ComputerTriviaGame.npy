@@ -1,0 +1,113 @@
+# generate new questions URL with other category or difficulty on https://opentdb.com/api_config.php
+url = "https://opentdb.com/api.php?category=18&type=boolean&amount=10"
+
+const TOTAL_NUMBER_OF_QUESTIONS = 10 # 1..20
+
+text:byte[512]
+correct_answer:bool
+question:byte
+score:byte
+
+def drawTitle():
+    background(0, 0, 0)
+    drawLine(0, 35, 240, 35)
+    textFont(FONT_ROBOTO_32)
+    drawText(120 - textWidth("COMPUTER") / 2, 40, "COMPUTER")
+    drawText(120 - textWidth("TRIVIA") / 2, 80, "TRIVIA")
+    drawText(120 - textWidth("GAME") / 2, 120, "GAME")
+    drawLine(0, 163, 240, 163)
+    update()
+
+def normalizeQuestion():
+    while strFind(text, "&quot;") > -1:
+        index = strFind(text, "&quot;")
+        text = strSubstring(text, 0, index) + strSubstring(text, index + 6, strLen(text))
+    while strFind(text, "&#039;") > -1:
+        index = strFind(text, "&#039;")
+        text = strSubstring(text, 0, index) + strSubstring(text, index + 6, strLen(text))
+
+def prepareQuestion():
+    text = readRequestJSON("results." + question + ".question")
+    normalizeQuestion()
+    correct_answer = strToBool(readRequestJSON("results." + question + ".correct_answer"))
+
+def drawQuestion():
+    background(0, 0, 0)
+    textFont(FONT_ROBOTO_24)
+    x = 0
+    y = 0
+    while strFind(text, " ") > -1:
+        space_index = strFind(text, " ")
+        word = strSubstring(text, 0, space_index)
+        if x > 0 and x + textWidth(" " + word) > 240:
+            x = 0
+            y += 20
+        if x == 0:
+            drawText(x, y, word)
+            x += textWidth(word)
+        else:
+            drawText(x, y, " " + word)
+            x += textWidth(" " + word)
+        text = strSubstring(text, space_index + 1, strLen(text))
+    if x + textWidth(" " + text) > 240:
+        drawText(0, y + 20, text)
+    else:
+        drawText(x, y, " " + text)
+
+def drawFooter():
+    fill(0, 255, 0)
+    drawRectangle(0, 220, 20, 20)
+    fill(255, 0, 0)
+    drawRectangle(220, 220, 20, 20)
+    textFont(FONT_ROBOTO_24)
+    drawText(3, 215, "<")
+    drawText(120 - textWidth(score + " / " + question) / 2, 210, score + " / " + question)
+    drawText(223, 215, ">")
+    update()
+
+def showQuestion():
+    prepareQuestion()
+    drawQuestion()
+    drawFooter()
+
+def checkAnswer(answer:bool):
+    if answer == correct_answer:
+        score += 1
+        fill(0, 255, 0)
+    else:
+        fill(255, 0, 0)
+    drawRectangle(110, 190, 20, 20)
+    update()
+    delay(500)
+    question += 1
+
+def showResult():
+    background(0, 0, 0)
+    textFont(FONT_ROBOTO_32)
+    drawText(120 - textWidth("FINAL") / 2, 40, "FINAL")
+    drawText(120 - textWidth("SCORE") / 2, 80, "SCORE")
+    textFont(FONT_ROBOTO_BOLD_32)
+    drawText(120 - textWidth(score + " / " + question) / 2, 120, score + " / " + question)
+    update()
+
+drawTitle()
+getRequest(url)
+showQuestion()
+
+def onClick():
+    if question < TOTAL_NUMBER_OF_QUESTIONS:
+        isAnswer = false
+        b:buttons = getButtons()
+        if b.left:
+            checkAnswer(true)
+            isAnswer = true
+        elif b.right:
+            checkAnswer(false)
+            isAnswer = true
+        if isAnswer:
+            if question < TOTAL_NUMBER_OF_QUESTIONS:
+                showQuestion()
+            else:
+                showResult()
+    else:
+        returnToMenu()
