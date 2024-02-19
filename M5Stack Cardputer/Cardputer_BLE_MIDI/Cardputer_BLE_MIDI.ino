@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <BLEMidi.h>
-#include <M5Cardputer.h">
+#include <M5Cardputer.h>
 
 int pitch;
 
