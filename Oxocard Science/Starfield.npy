@@ -1,0 +1,52 @@
+speed:int = 10
+
+class Star:
+    position:vector3D
+    lastZ:float
+
+    def init():
+        position.x = random(-1 * SCREEN_WIDTH, SCREEN_WIDTH)
+        position.y = random(-1 * SCREEN_HEIGHT, SCREEN_HEIGHT)
+        position.z = random(0, SCREEN_WIDTH)
+        lastZ = position.z
+
+    def draw():
+        position.z -= speed
+        if position.z < 1:
+            position.x = random(-1 * SCREEN_WIDTH, SCREEN_WIDTH)
+            position.y = random(-1 * SCREEN_HEIGHT, SCREEN_HEIGHT)
+            position.z = SCREEN_WIDTH
+            lastZ = position.z
+        fill(255, 255, 255)
+        noStroke()
+        x = map(position.x / position.z, 0, 1, 0, SCREEN_WIDTH)
+        y = map(position.y / position.z, 0, 1, 0, SCREEN_HEIGHT)
+        r = map(position.z, 0, SCREEN_WIDTH, 8, 0)
+        drawCircle(x, y, r)
+        lastX = map(position.x / lastZ, 0, 1, 0, SCREEN_WIDTH)
+        lastY = map(position.y / lastZ, 0, 1, 0, SCREEN_HEIGHT)
+        lastZ = position.z
+        stroke(255, 255, 255)
+        strokeWeight(2 * r)
+        drawLine(x, y, lastX, lastY)
+
+translate(120, 120)
+
+stars:Star[50]
+for i in sizeof(stars):
+    star:Star
+    star.init()
+    stars[i] = star
+
+def onDraw():
+    background(0, 0, 0)
+    for i in sizeof(stars):
+        stars[i].draw()
+    update()
+
+def onClick():
+    button:buttons = getButtons()
+    if button.up and speed < 50:
+        speed += 10
+    if button.down and speed > 0:
+        speed -= 10
